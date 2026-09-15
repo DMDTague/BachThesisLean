@@ -1,4 +1,3 @@
-````markdown
 # Exact List-Edge Labelings on Finite Bipartite Multigraphs
 
 This repository contains Lean 4 formalizations accompanying Dylan Tague's work on exact list-edge labelings of finite bipartite multigraphs.
