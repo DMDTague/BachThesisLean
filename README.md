@@ -1,80 +1,172 @@
-# BachThesisLean
+````markdown
+# Exact List-Edge Labelings on Finite Bipartite Multigraphs
 
-`BachThesisLean` is the Lean 4 verification companion to Dylan Tague's undergraduate mathematics thesis on exact list-edge labelings of finite bipartite multigraphs.
+This repository contains Lean 4 formalizations accompanying Dylan Tague's work on exact list-edge labelings of finite bipartite multigraphs.
 
-The repository is organized as a finished mathematical verification artifact. Its purpose is to make the formalized claims, their hypotheses, their proof dependencies, and the boundary of the machine-checked development explicit.
+The development formalizes the exact-list lower bound, a stronger nested-minimizer theorem, the exact one-step uncrossing surplus identity, the resulting Latin-square growth bound, and structural results for cubic bipartite multigraphs including star products, tight-cut contractions, and Pfaffian descent.
 
-## Mathematical object
+## Exact-list lower bound
 
-For a finite left-regular bipartite multigraph `R`, with parallel edges treated as distinct edge copies, the central exact-list theorem proves
+Let `R` be a finite left-`k`-regular bipartite multigraph, with parallel edges treated as distinct edge copies. For every exact left-list assignment `L` of size `k`, the formalization proves
 
 \[
 N(L,R) \ge c_k(R),
 \]
 
-when every left vertex receives an exact list of `k` labels. Here `N(L,R)` counts admissible exact-list edge labelings and `c_k(R)` counts ordinary proper edge-colorings from a fixed labelled `k`-palette.
+where `N(L,R)` is the number of admissible exact-list edge labelings and `c_k(R)` is the number of proper edge-colorings from a fixed labelled `k`-palette.
 
-The machine-checked theorem is `exactListLowerBound_machineChecked` in `BachThesisLean/Uncrossing/MainBound.lean`. The stronger nonregular canonical nested-minimizer theorem is `nested_minimizer` in `BachThesisLean/Uncrossing/NestedMinimizer.lean`.
+The main Lean theorem is
 
-The formalization also proves the exact one-step uncrossing surplus identity
+`exactListLowerBound_machineChecked`
+
+in `BachThesisLean/Uncrossing/MainBound.lean`.
+
+The development also proves the stronger nonregular nested-minimizer theorem
+
+`nested_minimizer`
+
+in `BachThesisLean/Uncrossing/NestedMinimizer.lean`.
+
+## Exact uncrossing surplus
+
+The formalization proves the exact one-step surplus identity
 
 \[
 N(S,R)-N(S',R)
- = \sum_{\psi\in\Psi^*}2^{q(F_\psi)+r(F_\psi)},
+=
+\sum_{\psi\in\Psi^*}2^{q(F_\psi)+r(F_\psi)}.
 \]
 
-as `uncross_surplus_eq_sum_contributors_pow_q_add_r` in `BachThesisLean/Uncrossing/ManuscriptSurplus.lean`. The finite contributor set `Ψ*` is represented by `frozenPairContributors`.
+The corresponding Lean theorem is
 
-## Verified scope
+`uncross_surplus_eq_sum_contributors_pow_q_add_r`
 
-The rooted Lean library contains the formal proof chain for the exact-list lower bound, the canonical nested minimizer, the exact uncrossing surplus identity, the Latin/crown/residual specialization and growth bound, and the edge-copy-aware cubic structural theory developed for the thesis.
+in `BachThesisLean/Uncrossing/ManuscriptSurplus.lean`.
 
-The cubic layer includes matching-coveredness, edge-root and vertex-root port masks, EEP characterizations, star-product composition and projection, explicit tight-cut contractions and reconstruction, brace and amplification reductions, square smoothing, small-shore and Heawood certificates, TF3 probe reductions, an internal Pfaffian witness/sign formalism, and Pfaffian descent through an oriented cubic tight cut to both explicit contractions.
-
-The exact frozen scope is documented in [`docs/FORMALIZATION_SCOPE.md`](docs/FORMALIZATION_SCOPE.md). Statements outside the machine-checked scope, including open conjectures and external literature inputs, are recorded in [`KNOWN_GAPS.md`](KNOWN_GAPS.md).
+The finite contributor set `Ψ*` is represented by `frozenPairContributors`.
 
 ## Latin specialization
 
-The Latin modules formalize the normalization identities for the canonical class `U`, constant-diagonal class `V`, reduced count `rho`, and unrestricted count `L`; the crown identity `c_(n-1)(R_n) = V_n`; and the residual/canonical equivalence yielding `N_(n-1)(R_n) = U_(n+1)`.
+The Latin-square development formalizes:
 
-Combined with the exact-list theorem, these results give the one-step growth inequality `L_(n+1) >= (n+1)! L_n` and the theorem `latin_superfactorial_lowerBound`.
+- the canonical class `U`;
+- the constant-diagonal class `V`;
+- the reduced count `rho`;
+- the unrestricted count `L`;
+- the crown identity `c_(n-1)(R_n) = V_n`; and
+- the residual/canonical equivalence giving `N_(n-1)(R_n) = U_(n+1)`.
 
-## Cubic and Pfaffian boundary
+Together with the exact-list theorem, these results imply
 
-The project distinguishes internal Lean theorems from literature results. The unconditional implication direction formalized internally is `TF3 -> EVP -> EEP`. The reverse brace implication `EVP -> TF3` used in the manuscript relies on Häggkvist and is not introduced as a Lean axiom. The prescribed-edge result attributed to Diwan and the nonplanar Pfaffian-brace result attributed to Gorsky--Johanni--Wiederrecht likewise remain external literature inputs unless separately formalized.
+\[
+L_{n+1} \ge (n+1)!L_n,
+\]
 
-The Pfaffian tight-cut package in `BachThesisLean/Cubic/TightCutPfaffianSet.lean` proves descent from a Pfaffian witness on the original graph to witnesses on both explicit contractions. The converse implication from the stronger literature-level equivalence is outside the frozen verified scope.
+and yield the Lean theorem
 
-## Open research boundary
+`latin_superfactorial_lowerBound`.
 
-The Latin floor, common-core equality criterion, universal `TF_k` / cubic rainbow-component conjecture, and per-edge enumerative Galvin problem remain research statements rather than Lean theorems. Finite regression checks are retained only as finite certificates and are not treated as universal proofs.
+## Cubic bipartite graphs
 
-## Verification
+The cubic development is edge-copy-aware throughout and includes formalizations of:
 
-The project is pinned to Lean 4.19.0 and Mathlib v4.19.0 by `lean-toolchain` and `lake-manifest.json`.
+- perfect-matching existence and prescribed-edge extension;
+- matching-coveredness;
+- edge-root and vertex-root port masks;
+- EEP characterizations and two-port bounds;
+- star-product matching and factor decomposition;
+- EEP and 2EP composition and projection;
+- explicit tight-cut contractions and reconstruction;
+- matching extension through tight cuts;
+- brace and simple-brace reductions;
+- amplification reductions;
+- square smoothing and witness lifting;
+- small-shore and Heawood certificates; and
+- TF3 probe reductions.
 
-The verification layer consists of three complementary checks:
+The unconditional implication chain formalized internally is
 
-1. `python scripts/check_formalization.py` audits source hygiene, rejects proof placeholders and user axioms, checks proposition-target registration, and verifies that every local Lean module is rooted in the default import graph.
-2. `lake build` elaborates and compiles the complete rooted `BachThesisLean` library.
-3. `lake env lean Verification.lean` performs the transitive kernel-axiom audit over the public theorem/definition layer and enforces the repository's non-vacuity checks.
+\[
+TF3 \Longrightarrow EVP \Longrightarrow EEP.
+\]
 
-Only Lean's standard logical axioms admitted by the verification policy are permitted.
+## Pfaffian descent
 
-See [`docs/VERIFICATION.md`](docs/VERIFICATION.md) for the verification contract.
+The repository contains an internal Pfaffian witness and sign formalism for finite bipartite multigraphs.
 
-## Thesis correspondence
+The formalization includes:
 
-The final thesis-to-Lean correspondence is established claim by claim: each manuscript theorem or lemma is matched to its Lean declaration when formalized, while external results, finite evidence, terminology-only interpretations, and open conjectures are marked separately. This correspondence is the authority for the final manuscript revision.
+- reference and relative permutation-sign theory;
+- graph-isomorphism transport;
+- spanning-subgraph inheritance;
+- odd-path smoothing;
+- square-smoothing transport;
+- star-product relative-sign and edge-sign factorization;
+- three-port normalization; and
+- Pfaffian witness descent through cubic tight cuts.
 
-The public mathematical report currently included with the repository is [`docs/capstone/EXACT_LIST_EDGE_LABELINGS_FINAL_REPORT.md`](docs/capstone/EXACT_LIST_EDGE_LABELINGS_FINAL_REPORT.md). The final thesis text should be read together with the frozen formalization boundary once manuscript reconciliation is complete.
+The endpoint of this chain is `BachThesisLean/Cubic/TightCutPfaffianSet.lean`, which proves that a Pfaffian witness on the original graph induces Pfaffian witnesses on both explicit tight-cut contractions under the stated hypotheses.
 
-## Reproducing verification
+The converse tight-cut Pfaffian implication is not asserted by the formalization.
 
-From the repository root:
+## Formalized scope
+
+The repository distinguishes machine-checked results from finite evidence, external literature, and open research statements.
+
+In particular, the development does not introduce external graph-theoretic results as Lean axioms. The reverse brace implication `EVP -> TF3` used in the accompanying manuscript relies on Häggkvist, while the prescribed-edge result attributed to Diwan and the nonplanar Pfaffian-brace result attributed to Gorsky--Johanni--Wiederrecht remain external unless separately formalized.
+
+The Latin floor, common-core equality criterion, universal `TF_k` / cubic rainbow-component conjecture, and per-edge enumerative Galvin problem also remain outside the proved theorem layer.
+
+The exact formalization boundary is documented in:
+
+- [`docs/FORMALIZATION_SCOPE.md`](docs/FORMALIZATION_SCOPE.md)
+- [`KNOWN_GAPS.md`](KNOWN_GAPS.md)
+
+## Building the formalization
+
+The project uses Lean 4.19.0, Mathlib, and Lake.
+
+With `elan` installed, run:
+
+```text
+lake update
+lake build
+```
+
+## Independent proof checking
+
+The repository includes additional source and kernel-level verification.
+
+Run:
 
 ```text
 python scripts/check_formalization.py
 lake build
 lake env lean Verification.lean
 ```
+
+The verification pipeline checks:
+
+- source hygiene and import coverage;
+- the complete rooted Lean library;
+- the transitive axioms of the public theorem and definition layer; and
+- non-vacuity conditions on the audited environment.
+
+The kernel audit permits only Lean's standard logical axioms:
+
+- `propext`
+- `Classical.choice`
+- `Quot.sound`
+
+and rejects unexpected transitive axioms.
+
+See [`docs/VERIFICATION.md`](docs/VERIFICATION.md) for the verification contract.
+
+## Mathematical report
+
+A public mathematical report accompanying the formalization is included at
+
+[`docs/capstone/EXACT_LIST_EDGE_LABELINGS_FINAL_REPORT.md`](docs/capstone/EXACT_LIST_EDGE_LABELINGS_FINAL_REPORT.md).
+
+The final thesis-to-Lean correspondence records which manuscript statements are represented by Lean declarations and which remain external, computational, expository, or open.
+````
