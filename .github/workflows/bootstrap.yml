@@ -1,0 +1,52 @@
+name: Bootstrap clean verification repository
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/bootstrap.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decode and validate frozen snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 --decode .bootstrap/chunk_000 > /tmp/final-snapshot.zip
+          unzip -t /tmp/final-snapshot.zip
+          rm -rf /tmp/final-snapshot
+          mkdir -p /tmp/final-snapshot
+          unzip -q /tmp/final-snapshot.zip -d /tmp/final-snapshot
+          root="$(find /tmp/final-snapshot -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          test -n "$root"
+          test -f "$root/README.md"
+          test -f "$root/BachThesisLean.lean"
+          test -f "$root/Verification.lean"
+          test -f "$root/.github/workflows/lean.yml"
+          test ! -e "$root/ASTRA_HANDOFF_2026-09-14.md"
+          echo "SNAPSHOT_ROOT=$root" >> "$GITHUB_ENV"
+
+      - name: Replace main with one clean archival commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan archival-main
+          git rm -rf .
+          cp -a "$SNAPSHOT_ROOT"/. ./
+          rm -rf .bootstrap
+          rm -f .github/workflows/bootstrap.yml
+          git add -A
+          git commit -m "Final Lean verification snapshot"
+          git push --force origin HEAD:main
